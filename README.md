@@ -22,7 +22,7 @@ Two files containing helper functions are also included in the repo:
 ## What libraries does it use?
 The RShiny app in this repo makes use of the following libraries:
 1.  [rvest](https://github.com/hadley/rvest) - For webscraping
-2. [magritrr[(https://github.com/tidyverse/magrittr) - To allow for method piping
+2. [magritrr](https://github.com/tidyverse/magrittr) - To allow for method piping
 3. [mongolite](https://github.com/jeroen/mongolite) - To handle MongoDB connections
 4. [dplyr](https://github.com/tidyverse/dplyr) - For data processing
 5. [stringr](https://github.com/tidyverse/stringr) - For string processing / better regexp matching
