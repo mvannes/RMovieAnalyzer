@@ -3,7 +3,7 @@ library(magrittr)
 
 source("helper.R")
 
-
+# Init choices with choice labels.
 choices <- c("rating", "release_year", "votes", "title_length")
 names(choices) <- c("Rating", "Release year", "Number of votes", "Title length")
 

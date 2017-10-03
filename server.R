@@ -35,7 +35,8 @@ shinyServer(function(input, output) {
     output$combinedPlot <- renderPlot({
         filtered_output <- filter(
             full_stats,
-            (full_stats$ReleaseYear >= input$year[1] & full_stats$ReleaseYear <= input$year[2])
+            ReleaseYear >= input$year[1],
+            ReleaseYear <= input$year[2]
         )
         qplot(
             x=select_data(filtered_output, input$x),
@@ -48,7 +49,8 @@ shinyServer(function(input, output) {
     output$imdbPlot <- renderPlot({
         filtered_output <- filter(
             scraped_stats,
-            (scraped_stats$ReleaseYear >= input$year[1] & scraped_stats$ReleaseYear <= input$year[2])
+            ReleaseYear >= input$year[1],
+            ReleaseYear <= input$year[2]
         )
         qplot(
             x=select_data(filtered_output, input$x),
@@ -61,7 +63,8 @@ shinyServer(function(input, output) {
     output$mongoPlot <- renderPlot({
         filtered_output <- filter(
             mongo_stats,
-            (mongo_stats$ReleaseYear >= input$year[1] & mongo_stats$ReleaseYear <= input$year[2])
+            ReleaseYear >= input$year[1],
+            ReleaseYear <= input$year[2]
         )
         qplot(
             x=select_data(filtered_output, input$x),

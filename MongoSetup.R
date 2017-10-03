@@ -17,10 +17,9 @@ database_name <- "test"
 movies <- mongo(collection = "movies", db = database_name)
 ratings <- mongo(collection = "ratings", db = database_name)
 
-# Query the smallest possible subset
+# Query the smallest possible subset of columns
 all_movies <- movies$find(
-    fields = '{"movieId": true, "genres": true, "title": true, "_id": false}',
-    limit = 900000
+    fields = '{"movieId": true, "genres": true, "title": true, "_id": false}'
 )
 # Query a grouped by aggregation of all ratings.
 # Grouped by the movie id, the sum amount of votes, and average rating.
@@ -28,7 +27,7 @@ all_ratings <- ratings$aggregate(
     '[
         {"$group":{"_id":"$movieId", "votes": {"$sum":1}, "average_rating":{"$avg":"$rating"}}}
     ]',
-    options = '{"allowDiskUse":true}'
+    options = '{"allowDiskUse":true}' # Fuck yeah disk usage, this is why I have a good laptop.
 )
 
 filtered_movies <- data.frame()
