@@ -70,6 +70,31 @@ get_plot <- function(data_set, input, colour_on="ReleaseYear") {
     return(plot)
 }
 
+get_text_output <- function (data_set, input, type) {
+    text <- renderText({
+        filtered_output <- filter(
+            data_set,
+            ReleaseYear >= input$year[1],
+            ReleaseYear <= input$year[2]
+        )
+        switch(
+            type,
+            movie_count = {
+                return(paste("Amount of movies: ", nrow(filtered_output)))
+            },
+            max_rating = {
+                return(paste("Maximum rating: ", max(filtered_output$Rating)))
+            },
+            min_rating = {
+                return(paste("Minimum rating: ", min(filtered_output$Rating)))
+            },
+            mean_rating = {
+                return(paste("Mean rating: ", mean(filtered_output$Rating)))
+            }
+        )
+    })
+}
+
 get_imdb_data <- function(force_refresh = FALSE) {
     if (!exists("scraped_stats") | force_refresh) {
         # Webscrape IMDB for imdb stats.

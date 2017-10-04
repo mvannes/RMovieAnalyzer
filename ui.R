@@ -40,9 +40,36 @@ shinyUI(fluidPage(
         mainPanel(
             tabsetPanel(
                 type="tabs",
-                tabPanel("Combined", plotOutput("combinedPlot")),
-                tabPanel("IMDB", plotOutput("imdbPlot")),
-                tabPanel("GroupLens", plotOutput("mongoPlot"))
+                tabPanel(
+                    "Combined",
+                    plotOutput("combinedPlot"),
+                    wellPanel(
+                        textOutput("combinedMovies"),
+                        textOutput("combinedMaxRating"),
+                        textOutput("combinedMinRating"),
+                        textOutput("combinedMeanRating")
+                    )
+                ),
+                tabPanel(
+                    "IMDB",
+                    plotOutput("imdbPlot"),
+                    wellPanel(
+                        textOutput("imdbMovies"),
+                        textOutput("imdbMaxRating"),
+                        textOutput("imdbMinRating"),
+                        textOutput("imdbMeanRating")
+                    )
+                ),
+                tabPanel(
+                    "GroupLens",
+                    plotOutput("mongoPlot"),
+                    wellPanel(
+                        textOutput("mongoMovies"),
+                        textOutput("mongoMaxRating"),
+                        textOutput("mongoMinRating"),
+                        textOutput("mongoMeanRating")
+                    )
+                )
             )
         )
     )
