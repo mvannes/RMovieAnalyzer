@@ -1,6 +1,5 @@
 library(rvest)
 library(magrittr)
-source("helper.R")
 
 scrape_imdb <- function(start_date, end_date) {
 

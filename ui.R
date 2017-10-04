@@ -1,7 +1,7 @@
 library(shiny)
 library(magrittr)
 
-source("helper.R")
+source("GraphDataHelper.R")
 
 # Init choices with choice labels.
 choices <- c("rating", "release_year", "votes", "title_length")
