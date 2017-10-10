@@ -111,6 +111,46 @@ This is a simple regexp that matches the year, an arbitrary amount of numbers be
 ```
 Having extracted the year, we use the same regexp to gsub the year out, leaving us with a proper title. 
 ``` R 
+    title <- gsub(regexp_pattern, '', movie$title)
+```
+Our genres are a single string right now, separated by `"|"` characters. So we split the string on that character to form a vector of genre strings.
+``` R
     genres <- strsplit(movie$genres, "\\|")
 ```
-
+To get the correct rating and amount of votes we must make use of the data from our `all_ratings` data frame. To get the correct information we filter out anything that doesn't have a movieId field with our movie's id.
+We can immediately take the `votes` field. As this has already been cleaned by our mongo query we only need to insert this into our result.
+``` R
+    movie_ratings <- filter(all_ratings, (all_ratings["_id"] == movie$movieId))
+    votes <- movie_ratings$votes
+```
+Now we'd like to do the same for our rating, but we can't. Why not? IMDB uses a rating system where a score between 1 and 10 is given. MovieLens only goes up to 5. So we must make these two datasets compatible. In this case we opt to multiply the MovieLens data by 2, and  round the resulting number to 2 decimals.
+``` R
+rating <- round(movie_ratings$average_rating * 2, 2)
+```
+As a final step of  data cleaning we check if either rating or votes are empty. If they are we toss them out, as no votes means that comparing by vote is rather hard.
+``` R
+    if(length(votes) == 0 | length(rating) == 0) {
+        next
+    }
+```
+#### Step 3: Add it all together
+The last part will be to add each row to our dataframe of clean, usefull data. 
+``` R 
+    parsed_movie <- data.frame(
+        Title = title,
+        Rating = rating,
+        ReleaseYear = year,
+        Votes = votes
+    )
+    parsed_movie$Genre <- genres
+    filtered_movies <- rbind(filtered_movies, parsed_movie)
+```
+Note that the genres are added separately as each row in the data frame is given a vector of genres. The `data.frame()` function doesn't handle this too well so we asign the genres to the correct column after creating it.
+Lastly we use `rbind` to append our cleaned data to all the previous rows of clean data.  r(ow)bind lets us append two dataframes with the same columns to eachother, which gives us a complete data frame.
+ 
+#### Step 4: Add it to the database
+Now this step has taken quite some time. We don't want to repeat this every time our shiny app is ran. So what we want to do is save our cleaned data to a different mongo collection, satisfying our assignment requirement of using an active data connection, while also greatly improving performance.
+``` R
+    filtered_db <- mongo(collection = "filtered_movies", db = database_name)
+    filtered_db$insert(filtered_movies)
+```
