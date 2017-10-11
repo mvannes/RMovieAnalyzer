@@ -154,3 +154,113 @@ Now this step has taken quite some time. We don't want to repeat this every time
     filtered_db <- mongo(collection = "filtered_movies", db = database_name)
     filtered_db$insert(filtered_movies)
 ```
+
+## IMDB
+### Problems with the data
+1. It's on a website.
+Our data is on a website. It needs to be locally stored somewhere instead.
+
+I suppose the chapter should be renamed to "problem with the data". There aren't a lot of problems that don't involve simple parsing.
+### IMDBScraper.R
+Because webscraping shouldn't be done in the same file as database parsing.
+
+#### Step 1: Functionality
+Lets start with the first important part of our imdb scraping, identifying that we need to do this a lot. The way we intend to do this is to create a function that will allow us to do our web scraping on demand.
+The beauty of functions is that we can reuse them as often as we want. Lets take a look at the signature for our function.
+``` R
+    scrape_imdb <- function(start_date, end_date)
+```
+Our function named `scrape_imdb` takes two required parameters. The start date, and the end date. These can then be used inside the function to set the boundaries of our webscraped data.
+
+#### Step 2: Taking data from the internet
+This step sounds really hard. This brings up thoughts of sending CLI curls, parsing through straight html, saving that to files, reading them again. Instead we use magic. Or the [rvest](https://github.com/hadley/rvest) webscraping library. Really they're the same thing.
+What do we actually need to webscrape data? First we need an url, without an url there is little we can do as this will indicate what webpage we should visit. 
+``` R
+    base_url <- paste(
+        'http://www.imdb.com/search/title?count=100&release_date=',
+        'DATE_HERE,DATE_HERE&title_type=feature&sort=boxoffice_gross_us,desc',
+        sep=""
+    )
+```
+Of note in this code snippet is that we have two `DATE_HERE` string in our url. This is because the actual url we need to visit must contain a start and end date. Because we want to get the top 100 moviesof every year, this `DATE_HERE` string must be replaced with something useful. 
+
+We also want to ensure that we don't get data from just the start and end date, but also for every year in between. We do this by creating a vector of years like so:
+``` R
+    release_years <- seq(start_date, end_date, 1)
+```
+This creates a vector containing the sequence from start date to end date with steps of 1. So for a start date of 2015 and an end date of 2017, the vector will contain 2015, 2016, and 2017.
+
+We then proceed to loop over our sequence of dates, to scrape data from the correct urls. We use gsub to replace the `"DATE_HERE"` placeholders in our base url with the correct year. 
+``` R
+    for(year in release_years) {
+        url <- gsub("DATE_HERE", year, base_url)
+```
+Then, using the `rvest` library, we can read the entirety of the html page and save this to a variable.
+``` R
+        page <- read_html(url)
+```
+Actual magic.
+
+#### Step 4: Using the scraped webpage
+Rvest does something really cool. It doesn't just give us html to parse through. It gives us the ability to take information contained in the html elements through css selectors. This makes webscraping the easiest thing, only requiring us to identify the correct css selectors needed. Doing this for the first bit of information we want, the page titles looks like this:
+``` R 
+ page_titles <- html_nodes(page, '.lister-item-header a') %>%
+        html_text()
+```
+The html nodes function lets us use the correct selector, in this case `.lister-item-header a` to directly take the correct node from the html page object. Piping this to the `html_text` function turns this into simple strings. 
+Of course, this is probably one of the easiest things to scrape. What happens when our desired element doesn't have a direct class? Such as with our vote count?
+Well every element still has a class, secretly.
+``` R 
+    page_votes <- html_nodes(page,'.sort-num_votes-visible span:nth-child(2)') %>%
+        html_text() %>%
+        gsub("\\,", "", .) %>%
+        as.numeric()
+```
+First, we select the correct html element, making use of a direct class name, an element type, and the `nth-child` css selection function. This is piped to get the html text.
+A problem exists with this data. The votes use commas to split the number into more readable types. Making these numeric without further parsing will result in a large list of `NA` objects. This is of course wrong, so we must pipe the resulting text to a gsub to remove all commas from the text before making everything numeric.
+
+Our ratings don't suffer from this same problem, so here we can use a much more simple solution for parsing them, sending them directly to a numeric call.
+``` R
+    page_ratings <- html_nodes(page, '.ratings-imdb-rating strong') %>%
+        html_text() %>%
+        as.numeric()
+```
+After parsing our genres, removing newline (`\n`) characters, and splitting the string.
+``` R 
+    page_genres <- html_nodes(page, '.genre') %>%
+        html_text() %>%
+        gsub("\n", "", .) %>%
+        strsplit(., ", ")
+```
+We can add all this data to a dataframe, and then use our `rbind` function to append the current year to the rest of the scraped dataset.
+``` R
+    df <- data.frame(
+        Title = page_titles,
+        Rating = page_ratings,
+        ReleaseYear = year,
+        Votes = page_votes
+    )
+    df$Genre <- page_genres
+    imdb <- rbind(imdb, df)
+```
+As the last part of the function, we return our scraped data, so other placed can make use of the data.
+``` R
+    return(imdb)
+```
+
+## Recap
+During this chapter we processed our `.csv` files by moving them into mongo collections, querying those collections, and then reinserting them into a new collection of filtered data, and created a function to actively webscrape IMDB data by using the `rvest` library. 
+Now that we have al this data we must use it to show statistics.
+
+# Shiny Graphs
+## What is shiny?
+Shiny refers to the [rshiny](https://github.com/rstudio/shiny) cran library. This allows the user to make interactive graphs. And as we all know, interactive graphs are much cooler than regular graphs.
+In our case we want to use shiny to allow the user to filter results based on release year, and allow the user to select what information they want to display on the x- and y-axis. The core parts of shiny are the `ui.R` and `server.R` files.
+
+## ui.R
+The shiny `ui.R` file contains the user interface logic. This decides how information is shown to the user, and the location of this information. Looking at our ui file, we see that we first declare some choices for our user. This is done at first because we do not need these choices to rely on anything else that the user puts in.
+``` R
+choices <- c("rating", "release_year", "votes", "title_length")
+names(choices) <- c("Rating", "Release year", "Number of votes", "Title length")
+```
+We give the user the option to select the ratings, the release year, the number of votes, and the title length as choices for display on the x- and y-axis. Note that these are given names, allowing us to make use of more convenient programming style values, while displaying nice human readable choices to our user. 
