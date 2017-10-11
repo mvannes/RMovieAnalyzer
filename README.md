@@ -264,3 +264,272 @@ choices <- c("rating", "release_year", "votes", "title_length")
 names(choices) <- c("Rating", "Release year", "Number of votes", "Title length")
 ```
 We give the user the option to select the ratings, the release year, the number of votes, and the title length as choices for display on the x- and y-axis. Note that these are given names, allowing us to make use of more convenient programming style values, while displaying nice human readable choices to our user. 
+
+We want to have a nice little sidebar that holds options for the user to affect the graph contents, and a main part of the application that shows graphs and information.
+Lets take a look at how we create a nice sidebar first.
+``` R
+    sidebarPanel(
+        h4("Available filters"),
+        sliderInput(
+            "year",
+            paste("Input year (", get_start_date(), "-", get_end_date(), ")"),
+            min = get_start_date(),
+            max = get_end_date(),
+            c(get_start_date(), get_end_date()),
+            step = 1,
+            sep=""
+        ),
+        selectInput(
+            "x",
+            "X-axis",
+            choices
+        ),
+        selectInput(
+            "y",
+            "Y-axis",
+            choices
+        )
+    )
+```
+This results in a sidebar titled `Available filters`, that has three possible inputs. A slider that lets the user select a date range, somewhere between our start year and end year. Two dropdown boxes with the predefined choice values. These are used for selecting what information to show on the x- and y-axis. 
+
+Now that we have our sidebar we should ensure that we have a place to show graphs. We do this by creating a `mainPanel`. Because we are showing information from multiple data sets, and we want to create a comparison between the data sets we will make use of tabs to show a graph that combines our data sets, and a graph for both of the data sets on an individual basis. 
+``` R
+    mainPanel(
+        tabsetPanel(
+            type="tabs",
+            tabPanel(
+                "Combined",
+                plotOutput("combinedPlot"),
+                wellPanel(
+                    textOutput("combinedMovies"),
+                    textOutput("combinedMaxRating"),
+                    textOutput("combinedMinRating"),
+                    textOutput("combinedMeanRating")
+                )
+            ),
+            tabPanel(
+                "IMDB",
+                plotOutput("imdbPlot"),
+                wellPanel(
+                    textOutput("imdbMovies"),
+                    textOutput("imdbMaxRating"),
+                    textOutput("imdbMinRating"),
+                    textOutput("imdbMeanRating")
+                )
+            ),
+            tabPanel(
+                "GroupLens",
+                plotOutput("mongoPlot"),
+                wellPanel(
+                    textOutput("mongoMovies"),
+                    textOutput("mongoMaxRating"),
+                    textOutput("mongoMinRating"),
+                    textOutput("mongoMeanRating")
+                )
+            )
+        )
+    )
+```
+Each of our tabs contains a title which explains what the information in the tab is about. 
+Furthermore, they contain a plot that shows the actual data, as well as a depressed panel that contains some additional information, ( the amount of movies, the maximum rating, the minimum rating, and the mean rating ). These graphs and blocks of information update when the user makes changes to their selections. 
+
+## server.R
+The `server.R` file contains all the background logic that facilitates the showing of graphs based on user input. Most importantly, this is where our graphs are made. Or at least this is where they should be made. As I moved more and more logic to the `server.R` script the file became incredibly cluttered. This is where OOP instincts kicked in, the actual parsing of data into user output should be abstracted away to a different file. Mainly because it improves readability. This means that the first line, and arguably the most important line in the file is to make use of the `source()` function to import the entirety of a helper file, more on that file later, into the `server.R` file.
+``` R
+    source("GraphDataHelper.R")
+```
+Once this is done we query for our two datasets. Because we don't want to have to rescrape imdb and requery our database whenever the user makes changes to their selection, we query the full dataset using functions abstracted away to the helper file. These are saved as global variables so we can easely access them later on. While not strictly neccesary to make them global, this allows us to make our querying functions slightly smarter later on. 
+``` R
+    scraped_stats <<- get_imdb_data(FALSE)
+    mongo_stats <<- get_mongo_data(FALSE)
+    full_stats <<- rbind(scraped_stats, mongo_stats)
+```
+More on how these functions work later. For now all we need to know is that we have queried both our data sources and saved them to the correct dataframes, one of which is a combination of both sets. 
+
+Lets move on to the really cool part of our server logic, the part that reacts to the user inputs.
+
+``` R
+
+shinyServer(function(input, output) {
+    output$combinedPlot <- get_plot(full_stats, input, colour_on = "is_imdb")
+    output$combinedMovies <- get_text_output(full_stats, input, "movie_count")
+    output$combinedMaxRating <- get_text_output(full_stats, input, "max_rating")
+    output$combinedMinRating <- get_text_output(full_stats, input, "min_rating")
+    output$combinedMeanRating <- get_text_output(full_stats, input, "mean_rating")
+
+    output$imdbPlot <- get_plot(scraped_stats, input)
+    output$imdbMovies <- get_text_output(scraped_stats, input, "movie_count")
+    output$imdbMaxRating <- get_text_output(scraped_stats, input, "max_rating")
+    output$imdbMinRating <- get_text_output(scraped_stats, input, "min_rating")
+    output$imdbMeanRating <- get_text_output(scraped_stats, input, "mean_rating")
+
+    output$mongoPlot <- get_plot(mongo_stats, input)
+    output$mongoMovies <- get_text_output(mongo_stats, input, "movie_count")
+    output$mongoMaxRating <- get_text_output(mongo_stats, input, "max_rating")
+    output$mongoMinRating <- get_text_output(mongo_stats, input, "min_rating")
+    output$mongoMeanRating <- get_text_output(mongo_stats, input, "mean_rating")
+})
+```
+This doesn't look too cool, but I really like the abstractions. All this contains is calling helper functions and setting the correct outputs. Note that we actually pass the input to these functions. This could be altered to pass parts of the input, but since we're operating completely in the reactive context, this works just fine, if a little lazily.
+
+With our promises of coolness denied, we should take a look at the helper funtions we've  written.
+
+## GraphDataHelper
+### Libraries
+This R script contains a plethora of helper functions required to create our graphs. Lets first take a look at the libraries we use.
+``` R
+    library(shiny)
+    library(dplyr)
+    library(ggplot2)
+    library(mongolite)
+```
+[Shiny](https://github.com/rstudio/shiny) allows us to make use of shiny functions for rendering things. The main reason for this to be in the helper file is that the helper contains functions that are used directly in the server logic. 
+[Dplyr](https://github.com/tidyverse/dplyr) lets us do some of the filtering we need to properly make use of our user's input.
+[Ggplot2](https://github.com/tidyverse/ggplot2) is for rendering really cool graphs.
+[Mongolite](https://github.com/jeroen/mongolite) is used for creating mongodb connections.
+
+### Helper functions
+The first of our helper functions allow us to globally make use of the same start and end dates. These mainly exist to avoid use of magic numbers, as well as allow us to rapidly change these dates throughout our application, improving maintainability. 
+``` R 
+    get_start_date <- function () {
+        return(1995)
+    }
+    
+    get_end_date <- function() {
+        return(2017)
+    }
+```
+Next we have two helper functions that help our other helper functions. ( Yeah it gets a bit complicated. )
+These select different data and labels based on the user input. These are of course used to show correct data depending on our user's choices. 
+``` R
+    select_data <- function(data_set, selection) {
+        switch(
+            selection,
+            rating = {
+                return(data_set$Rating)
+            },
+            votes = {
+                return(data_set$Votes)
+            },
+            release_year = {
+                return(data_set$ReleaseYear)
+            },
+            title_length = {
+                return(nchar(as.character(data_set$Title)))
+            }
+        )
+    }
+    
+    select_label <- function(selection) {
+        switch(
+            selection,
+            rating = {
+                return("Rating")
+            },
+            votes = {
+                return("Amount of votes")
+            },
+            release_year = {
+                return("Release year")
+            },
+            title_length = {
+                return("Title length (chars)")
+            }
+        )
+    }
+```
+When writing these functions we had to make a few choices based on the exactly how generic they should be. We could have opted to separate the functions to provide the exact output for each of the desired outputs. This however would have led to having four times as many functions, that held quite a lot of code duplication. Because we generally prefer to avoid code duplication, we instead wrote a few generic functions, necessitating the creation of the above helper helper functions. 
+The first of these generic output functions is the `get_plot` function, which takes a data set, the user input, and a colour_on variable. This last variable is used to decide which field of the data set should be used to colourize the graph. For the graph of combined data we want to separate the imdb data from the MovieLens data. For the individual graphs we want to colourize based on the movie release year. 
+``` R 
+    get_plot <- function(data_set, input, colour_on="ReleaseYear") {
+        plot <- renderPlot({
+            filtered_output <- filter(
+                data_set,
+                ReleaseYear >= input$year[1],
+                ReleaseYear <= input$year[2]
+            )
+            ggplot(
+                data = filtered_output,
+                aes(
+                    x=select_data(filtered_output, input$x),
+                    y=select_data(filtered_output, input$y),
+                    colour= filtered_output[,colour_on]
+                )
+            ) + labs(x=select_label(input$x), y=select_label(input$y), colour=colour_on) +
+                geom_point() +
+                theme_classic()
+        })
+        return(plot)
+    }
+```
+This function uses the `shiny::renderPlot` function to render a plot. As this is a reactive context, we can make use of the input object to filter the given full data set with the parameters provided by the user. ( In this case filtering out anything that doesn't fall between the given date range. ) The filtered data is then used in creating a ggplot plot, with added colour, and labels based on the input. 
+The graph we create is a point graph, or scatterplot. The choice to go for a scatterplot is mainly due to us being interested in data density, and the sheer amount of data makes a scatterplot much more readable than for example a pie chart. 
+The plot is then returned to the output. 
+
+The second output rendering function is the `get_text_output` function, which uses the same concepts as the `get_plot` function to render text data.
+``` R
+    get_text_output <- function (data_set, input, type) {
+        text <- renderText({
+            filtered_output <- filter(
+                data_set,
+                ReleaseYear >= input$year[1],
+                ReleaseYear <= input$year[2]
+            )
+            switch(
+                type,
+                movie_count = {
+                    return(paste("Amount of movies: ", nrow(filtered_output)))
+                },
+                max_rating = {
+                    return(paste("Maximum rating: ", max(filtered_output$Rating)))
+                },
+                min_rating = {
+                    return(paste("Minimum rating: ", min(filtered_output$Rating)))
+                },
+                mean_rating = {
+                    return(paste("Mean rating: ", mean(filtered_output$Rating)))
+                }
+            )
+        })
+    }
+```
+The same filtering happens, except instead of rendering a plot, we render text based on the filtered data, and the value of the passed `type` parameter. 
+
+So far we've handled a lot of functions that deal with turning data into ouput, however we're still missing a step where we actually acquire the correct data for the server. The following two functions will handle that task. 
+First, to query our MovieLens data from MongoDB.
+``` R
+get_mongo_data <- function(force_refresh = FALSE) {
+    if (!exists("mongo_stats") | force_refresh) {
+        database_name <- "test"
+        movie_connection <- mongo(collection = "filtered_movies", db = database_name)
+        mongo_stats <- movie_connection$find(query =
+            paste(
+                '{"ReleaseYear": { "$gte": ', get_start_date(), ', "$lte": ', get_end_date(), '}}'
+            )
+        )
+        rm(movie_connection)
+        mongo_stats <- mutate(mongo_stats, is_imdb = FALSE)
+    }
+    return(mongo_stats)
+}
+```
+Lets take a closer look at the function, first we have the optional parameter `force_refresh`. Querying takes time, time we don't really want to be spending every time, so we check if the data environment already contains a correct named variable that holds the dataset. Only when the data isn't already loaded into memory do we want to query it. Of course situations may arise where we want to query the database regardless, to freshen up our data. In this case we can pass the logical `TRUE` to the function, to force it to query the database again.
+If we do need to query the database, either because the data environment doesn't hold the `mongo_stats` variable, or because we force refresh, we start by starting up a connection to our `filtered_movies` collection, and querying this with the global `get_start_date` and `get_end_date` functions as ReleaseYear specifiers. 
+Once we have queried our data we remove the connection from our environment, which will also close the connection. We don't want to leave connections open after all. 
+Though our data has been succesfully queried, we need to add a field for colourization purposes. We use the dplyr mutate function to add the `is_imdb` field to our dataset as being `FALSE`. This seems silly, as our data is obviously not from imdb. However this makes combining the two data sets much easier later on, during the plotting.
+
+Whether we refreshed our data or not, we return the `mongo_stats` to finish up the function.
+
+Lastly, we have a function to query our IMDB dataset, this looks a lot like the one used to query the MovieLens collection.
+``` R
+    get_imdb_data <- function(force_refresh = FALSE) {
+        if (!exists("scraped_stats") | force_refresh) {
+            scraped_stats <- scrape_imdb(get_start_date(), get_end_date())
+            scraped_stats <- mutate(scraped_stats, is_imdb = TRUE)
+        }
+        return(scraped_stats)
+    }
+```
+The main difference between this function and the one that queries the MovieLens data is that this function sets the `is_imdb` field to `TRUE` instead of `FALSE`. Apart from that this one is much shorter as the actual querying logic is done in `IMDBScraper.R::scrape_imdb`. 
+
