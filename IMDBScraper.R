@@ -19,8 +19,6 @@ scrape_imdb <- function(start_date, end_date) {
     # We look for the fields:
     # - Movie title
     # - Amount of votes
-    # - Gross earnings in millions
-    # - Movie runtime
     # - Movie genres (multiple if applicable)
     for(year in release_years) {
         url <- gsub("DATE_HERE", year, base_url)

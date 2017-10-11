@@ -7,7 +7,6 @@ mongo_stats <<- get_mongo_data(FALSE)
 
 full_stats <<- rbind(scraped_stats, mongo_stats)
 
-# Define server logic required to draw a scatterplot!
 shinyServer(function(input, output) {
     output$combinedPlot <- get_plot(full_stats, input, colour_on = "is_imdb")
     output$combinedMovies <- get_text_output(full_stats, input, "movie_count")

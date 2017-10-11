@@ -53,7 +53,7 @@ for(i in 1:nrow(all_movies)) {
     }
     title <- gsub(regexp_pattern, '', movie$title)
 
-    # Parse genres to only use the first one.
+    # Parse genres.
     genres <- strsplit(movie$genres, "\\|")
 
     # Parse rating info
