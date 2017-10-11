@@ -531,5 +531,32 @@ Lastly, we have a function to query our IMDB dataset, this looks a lot like the 
         return(scraped_stats)
     }
 ```
-The main difference between this function and the one that queries the MovieLens data is that this function sets the `is_imdb` field to `TRUE` instead of `FALSE`. Apart from that this one is much shorter as the actual querying logic is done in `IMDBScraper.R::scrape_imdb`. 
+The main difference between this function and the one that queries the MovieLens data is that this function sets the `is_imdb` field to `TRUE` instead of `FALSE`. Apart from that, this one is much shorter as the actual querying logic is done in `IMDBScraper.R::scrape_imdb`. 
 
+# Comparisons and Conclusions
+In this chapter we'll take a look at our gathered data, and attempt to answer our research question.
+
+## Points of analysis
+We'll first decided what points in our graphs are best for creating comparisons, as the start date and end date are 1995 and 2017 respectively, and we have 4 choices for each of our axis, as well as three graphs per selection, we have 4\*4\*22\*3 = 1056 possible graphs to look at. This seems a bit much, and will no doubt greatly increase the size of this paper. Instead we want to look at our graphs by answering the following questions.
+1. Which dataset has the highest ratings when using as many movies as possible?
+2. Which dataset has the highest ratings in 2017?
+3. Does the amount of votes change how high a rating is given in each dataset?
+4. Does title length have any effect on rating?
+5. Which years have the longest titles?
+
+During these questions we should keep in mind the shape of the graphs. As the size of the dataset almost always favors the MovieLens dataset, which is much bigger than the scraped data, we must instead look at the way our graphs group together. This will allow for a more accurate comparisont than mere numbers can, and will allow us to answer our main research question.
+
+## Comparisons
+### Which dataset has the highest ratings?
+
+#### Between 1995 - 2017
+
+#### In 2017
+
+### Does the amount of votes influence rating?
+
+### Does title length influence rating?
+
+### Which years have the longest titles?
+
+## Conclusion
