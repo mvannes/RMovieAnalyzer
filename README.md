@@ -585,13 +585,89 @@ Starting of with the combined votes:
 We can clearly see that this combined graph is made less usefull by the discrepancy in number of movies.
 However what we can see is that the largest difference between highest and lowest ratings happens in lower voted movies. This makes a lot of sense, as a larger amount of votes will make for a more average grade. If 10000 people vote on a movie, and another comes along and votes a 1, this has little effect on the eventual rating. However if someone comes along on a movie with 1 vote, that new vote counts for a lot more in the calculating of averages.
 
-As the amount of votes goes up, we see that the average rating is higher. This can be explained by saying that as a movie has a higher rating, it will be more popular. This will also ensure that 
+As the amount of votes goes up, we see that the average rating is higher. This can be explained by saying that as a movie has a higher rating, it will be more popular. A more popular movie will have more people voting on it, as they have seen the movie. 
 
+Another trend we can identify is that movies with higher amounts of votes will never reach a perfect score. This is of course because movie enjoyment is subjective, and when more people watch a movie, there will also be more people that have a negative experience watching it, thus bringing the average down from 10. 
+
+Lets look at the other data sets to see if these observations continue, starting with our IMDB dataset.
 ![IMDB votes by rating](https://user-images.githubusercontent.com/8969371/32238527-4591bcde-be68-11e7-8284-5844e12b25c8.png)
+
+Here we see the same general shape form in our graph, meaning that the same conclusions can be found here. Interestingly we see that the effect previously found where more votes lead to less perfect scores holds more true here. As the data set is more limited, having chosen to scrape only the top grossing movies for each year, we can assume that these movies are also more popular. Due to this we can see that even movies with fewer votes have lower scores in this data set. Due to a lack of movies with single digit votes.
+
+To further confirm our observations we will look at the MovieLens graph with the same parameters.
 ![MovieLens votes by rating](https://user-images.githubusercontent.com/8969371/32238522-44f2c584-be68-11e7-8edd-9cac2a5c3ada.png)
 
+In this data set we again see the same shape take hold. This one shows even more clearly that as a movie has less votes, it's rating will move more towards the extreme ratings 1 and 10. 
+
+As all our datasets seem to form the same kind of graph we can take our statements from the first dataset as rough fact. Even though our imdb set has less movies, it still shows the same shape in terms of vote - rating correlation.
+
+The most interesting conclusion here is that if your movie can get people to vote, it will generally not recieve a low rating. Part of this is most assuredly due to the fact that ratings are opinion based, and people will generally voice their opinion if they are strongly in opposition or strongly in agreement with a statement. 
+To further expand on this we should normalize the data between the two datasets and see if the same graph shapes hold true. We would also like to add some amount of predictive capability, creating expected ratings based on the amount of votes on a movie. However that will have to be part of another research, as it is not the focus of this one.
+
 ### Does title length influence rating?
+Here we've decided to go with the silliest factor we could analyze from our dataset. The assumption we've made for this observation is that most popular movies do not have long-, nor short names. Thus we expect that movies with a longer or shorter name than average will trend towards a lower rating.
+
+Lets start by looking at the most general trends in our combined dataset. After which we can confirm our suspicions by comparing the individual datasets.
+![Combined rating by title length](https://user-images.githubusercontent.com/8969371/32238514-441e697e-be68-11e7-8796-1cebaf28e6cd.png)
+
+It looks like our suspicion is not at all true. Looking at both extremes on the graph, we see that there does not seem to be a correlation between the length of movies and being on either of the rating extremes. However we do see that no movie with a rating greater than ~8.0 has a title with more than ~75 characters.
+All this really means is that if you're making a movie you might not want to give it a really long name. But that doesn't guarentee success, as the same kind of title lengths are found for movies with a rating less than ~2.5. 
+Lets confirm these observations in the IMDB graph.
+![IMDB rating by title length](https://user-images.githubusercontent.com/8969371/32238523-451fedc0-be68-11e7-898e-2b7daa7b800b.png)
+
+This graph looks interesting, while the shape is roughly the same, the fact that there are less movies in this dataset than in the combined graph leads to a more readable graph. The most important points that can be found here is that in the imdb dataset the title length is much lower than in the combined dataset. The same kind of observations are formed however, the character count for each title only goes down.
+
+Lastly, lets take a look at the MovieLens dataset to further confirm the fact that this graph really says nothing at all.
+![MovieLens rating by title length](https://user-images.githubusercontent.com/8969371/32238518-4484921c-be68-11e7-9037-d47b101948e8.png)
+
+The same kind of information looks to be found in this graph. So to conclude, there is no real correlation between title length and movie rating. However, if you have a really long title, your movie is probably average. Usually. 
 
 ### Which years have the longest titles?
+Lets make one more comparison. Lets try to find out which dataset has the longest title, and in which years the longest titles reside.
+![Combined title length by year](https://user-images.githubusercontent.com/8969371/32238515-44409134-be68-11e7-98be-5ca34e03fe19.png)
+
+Looking at this graph we see that the longest title in the combined dataset is ~190 characters, and it's found in 2001.
+If we look at the overal trend in our graph we see that title lengths remain relatively consistent throughout the years, though in the last 4 years they seem to trend towards slightly shorter titles when compared to the rest of the dataset. 
+Apart from our highest longest year, the next two longest titles were found in 1998 and 1999.
+
+If we look at our other two datasets we can answer our comparison between the two datasets.
+
+![IMDB title length by year](https://user-images.githubusercontent.com/8969371/32238524-453c1752-be68-11e7-9d3d-8d825fbbc676.png)
+
+Lets gather the same facts for this dataset. Which year has the longest title? 2006, at roughly 80 characters. Much shorter than our combined dataset. The two runner ups for this data set are 1996 and 1999. Strangely enough, the same slight downwards trend in title length that we saw in the combined data set is not found in the IMDB data.
+A possible explanation for this could be that while average title length has gone down, this is not the case for highly grossing movies, which might trend towards more generic and cookie cutter names. 
+
+Finally, our final graph for this report. Lets look at our title trends for the MovieLens dataset.
+![MovieLens title length by year](https://user-images.githubusercontent.com/8969371/32238519-449e4dce-be68-11e7-8c97-bd0d6760a510.png)
+
+Here we see that the combined dataset is massively in favour of the MovieLens data, there are simply much more movies in it, thus overwhelming the scraped IMDB data. This graph looks almost exactly the same as the combined graph, with 2001 as the year with the longest title, followed by 1998 and 1999. 
+The trend towards slightly shorter movie titles is most evident in this data set, with a distinct drop from 2014 and onwards.
 
 ## Conclusion
+Now that we've made some comparisons, lets take a final look at our research question and attempt to answer it.
+
+> When looking at the two datasets, IMDB and Grouplens, which shows a closer grouping of data  points when various pieces of information are set against eachother.
+
+The data gathered from GroupLens (MovieLens) was much more tightly grouped, mostly due to the sheer amount of movies found in this dataset when compared to the webscraped data from IMDB. The most interesting observations we have managed to make during our research seem to be that despite the difference in amount of movies, distinct trends will remain the same. 
+Most notably, the shape of graphs remains the same, meaning that if a trend happens in one dataset, such as the reduction in title length in recent years, that same trend can be observed in the other dataset.
+So while grouping is much denser in the MovieLens dataset, a direct comparison can still be usefull to verify if a certain trend is consistent amongst different audiences.
+
+## Reflection and future corrections
+Looking back on the process of creation there are a couple points that I'm not too happy about.
+- The mongo scraping. 
+Honestly, loading this into separate collections before filtering the data was a good way to have more practice with advanced queries for R. Or at least, slightly more advanced than a find all. But in a real situation it wouldn't be too practical.
+- Disregarding "best" practices.
+I completely disregarded the fact that the R community encourages the usage of apply functions when doing anything for a dataset. This promotes the ability to eventually make these analysis operations multi-threaded, or even completely distributed. 
+My own solution using a for loop, while faster when running on a single core, does not allow for this easy move to a more distributed reuse of the code. This is something that would eventually be nice to have when expanding the IMDB dataset, getting 1000 movies per year, or even more. This is something that would by the very nature of webscraping be pretty slow right now. 
+- Combining datasets without weighing them against eachother.
+The MovieLens dataset was incredibly large, literally more than ten times larger than the IMDB dataset. This leads to every combined graph looking almost exactly like the former dataset's individual graph. In a future similar project it would be nice to further normalize these datasets, ensuring that they either have roughly the same amount of data, or that a proper weight is given to the datasets, to ensure the graphs are more meaningful.
+- No proper dependency management
+R is severely lacking in proper community supported dependency management. Every project seems to include various files that are almost like Make files in that they install all the exact packages that you need. But libraries are entirely too specific, working for version x.x.x and not x.x.y. Honestly, if the R community would adopt something like composer, or gradle, adoption of the language would be much more widespread.
+
+Luckily there were also positives!
+- R is really nice
+While I disagree with a lot of conventions in terms of using single files, instead of splitting things into separate files and functions, when using R for the purposes of data analysis, it's just lovely. Fast, easy to use functions that make parsing data into a nice visual that has actual meaning so very easy. Having done some analysis in PHP before, the difference is astounding. Looking back at what I'd written in PHP, I feel like the same result could've been accomplished using R in roughly a tenth of the lines.
+- Libraries for everything
+Do you need a highly specific mapping algorithm that applies only to your kind of dataset? R probably still has a library for that, ready to go at a moments notice. While documentation is often lacking, the code is almost always open source, allowing you to just read that instead. 
+
+All in all I would say that my experience with R so far has been very positive, the positives far outweighing the negatives of the language and it's usage.
