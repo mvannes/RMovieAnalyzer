@@ -3,6 +3,47 @@ __Authored by:__
 Michael van Nes
 500670754
 
+# Table of contents
+- [Research](#research)
+  * [Datasets](#datasets)
+    + [GroupLens / MovieLens](#grouplens--movielens)
+    + [IMDB](#imdb)
+  * [Research question](#research-question)
+- [Processing](#processing)
+  * [MovieLens](#movielens)
+    + [Choosing a database](#choosing-a-database)
+    + [Problems with the data](#problems-with-the-data)
+    + [MongoSetup.R](#mongosetupr)
+      - [Step 1: Querying](#step-1-querying)
+      - [Step 2: Disregard conventions, do looping](#step-2-disregard-conventions-do-looping)
+      - [Step 3: Add it all together](#step-3-add-it-all-together)
+      - [Step 4: Add it to the database](#step-4-add-it-to-the-database)
+  * [IMDB](#imdb-1)
+    + [Problems with the data](#problems-with-the-data-1)
+    + [IMDBScraper.R](#imdbscraperr)
+      - [Step 1: Functionality](#step-1-functionality)
+      - [Step 2: Taking data from the internet](#step-2-taking-data-from-the-internet)
+      - [Step 3: Using the scraped webpage](#step-3-using-the-scraped-webpage)
+  * [Recap](#recap)
+- [Shiny Graphs](#shiny-graphs)
+  * [What is shiny?](#what-is-shiny)
+  * [ui.R](#uir)
+  * [server.R](#serverr)
+  * [GraphDataHelper](#graphdatahelper)
+    + [Libraries](#libraries)
+    + [Helper functions](#helper-functions)
+- [Comparisons and Conclusions](#comparisons-and-conclusions)
+  * [Points of analysis](#points-of-analysis)
+  * [Comparisons](#comparisons)
+    + [Which dataset has the highest ratings?](#which-dataset-has-the-highest-ratings)
+      - [Between 1995 - 2017](#between-1995---2017)
+      - [In 2017](#in-2017)
+    + [Does the amount of votes influence rating?](#does-the-amount-of-votes-influence-rating)
+    + [Does title length influence rating?](#does-title-length-influence-rating)
+    + [Which years have the longest titles?](#which-years-have-the-longest-titles)
+  * [Conclusion](#conclusion)
+  * [Reflection and future corrections](#reflection-and-future-corrections)
+
 # Research
 ## Datasets
 ### GroupLens / MovieLens
@@ -201,7 +242,7 @@ Then, using the `rvest` library, we can read the entirety of the html page and s
 ```
 Actual magic.
 
-#### Step 4: Using the scraped webpage
+#### Step 3: Using the scraped webpage
 Rvest does something really cool. It doesn't just give us html to parse through. It gives us the ability to take information contained in the html elements through css selectors. This makes webscraping the easiest thing, only requiring us to identify the correct css selectors needed. Doing this for the first bit of information we want, the page titles looks like this:
 ``` R 
  page_titles <- html_nodes(page, '.lister-item-header a') %>%
@@ -669,5 +710,8 @@ Luckily there were also positives!
 While I disagree with a lot of conventions in terms of using single files, instead of splitting things into separate files and functions, when using R for the purposes of data analysis, it's just lovely. Fast, easy to use functions that make parsing data into a nice visual that has actual meaning so very easy. Having done some analysis in PHP before, the difference is astounding. Looking back at what I'd written in PHP, I feel like the same result could've been accomplished using R in roughly a tenth of the lines.
 - Libraries for everything
 Do you need a highly specific mapping algorithm that applies only to your kind of dataset? R probably still has a library for that, ready to go at a moments notice. While documentation is often lacking, the code is almost always open source, allowing you to just read that instead. 
+- Exciting possibilities
+Using the knowledge I've gained in making this small project the possibilities for both real life applications (using this in a work environment), as well as expanding on the current project through creating smart predicitons with machine learning or similar algorithm based predicting just sounds like a really fun thing to do. I will absolutely be looking into that in the future.
+
 
 All in all I would say that my experience with R so far has been very positive, the positives far outweighing the negatives of the language and it's usage.
