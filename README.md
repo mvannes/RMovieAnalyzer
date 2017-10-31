@@ -550,10 +550,45 @@ During these questions we should keep in mind the shape of the graphs. As the si
 ### Which dataset has the highest ratings?
 
 #### Between 1995 - 2017
+Lets first look at the IMDB dataset. 
+The following graph shows the ratings by year. The underlying well panel also gives us the information we're really looking for to answer this question. 
+![IMDB rating by release year](https://user-images.githubusercontent.com/8969371/32238526-45706304-be68-11e7-9130-c769f422aaa7.png)
+
+As we can see the highest rating in this dataset is a 9.6, which comes from a movie in 2010.
+
+Comparing this to the MovieLens dataset: 
+![MovieLens rating by release year](https://user-images.githubusercontent.com/8969371/32238521-44d6d2d4-be68-11e7-813a-8759528d5db4.png)
+
+We see that the highest rating in this dataset is a 10. Each year has had at least one movie with a solid 10 in the found ratings. 
+This can be explained due to larger volume of movies found in the MovieLens database.
 
 #### In 2017
+If we filter the year to only show movies found in 2017 and make the same comparison, the following results are found:
+
+For the IMDB dataset we get the following figure:
+![IMDB rating in 2017](https://user-images.githubusercontent.com/8969371/32238525-4557f35a-be68-11e7-9f13-d2fab52733be.png)
+
+The max rating in 2017 (As of writing. The year isn't over yet.) is: 8.5
+
+For the MovieLens dataset we get the following figure:
+![MovieLens rating in 2017](https://user-images.githubusercontent.com/8969371/32238520-44ba48ee-be68-11e7-840c-588c73408071.png)
+
+The max rating in 2017 (As of writing. The year isn't over yet.) is: 10
+We'd expected this when looking at the overal dataset comparison in the previous comparison. As this dataset had a 10 for every year and the IMDB dataset had an overal max of 9.6, the result in this comparison isn't too suprising.
 
 ### Does the amount of votes influence rating?
+For this comparison we want to look at both the individual datasets, as well as the combined dataset. AS this comparison is mostly about pattern recognition.
+
+Starting of with the combined votes:
+![Combined votes by rating](https://user-images.githubusercontent.com/8969371/32238517-4468328e-be68-11e7-9484-fbf71f2ee064.png)
+
+We can clearly see that this combined graph is made less usefull by the discrepancy in number of movies.
+However what we can see is that the largest difference between highest and lowest ratings happens in lower voted movies. This makes a lot of sense, as a larger amount of votes will make for a more average grade. If 10000 people vote on a movie, and another comes along and votes a 1, this has little effect on the eventual rating. However if someone comes along on a movie with 1 vote, that new vote counts for a lot more in the calculating of averages.
+
+As the amount of votes goes up, we see that the average rating is higher. This can be explained by saying that as a movie has a higher rating, it will be more popular. This will also ensure that 
+
+![IMDB votes by rating](https://user-images.githubusercontent.com/8969371/32238527-4591bcde-be68-11e7-8284-5844e12b25c8.png)
+![MovieLens votes by rating](https://user-images.githubusercontent.com/8969371/32238522-44f2c584-be68-11e7-8edd-9cac2a5c3ada.png)
 
 ### Does title length influence rating?
 
